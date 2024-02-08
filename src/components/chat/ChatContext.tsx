@@ -10,7 +10,7 @@ type StreamResponse = {
   isLoading: boolean;
 };
 
-export const ChatContext = createContext({
+export const ChatContext = createContext<StreamResponse>({
   addMessage: () => {},
   message: "",
   handleInputChange: () => {},
