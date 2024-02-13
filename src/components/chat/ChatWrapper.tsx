@@ -69,7 +69,7 @@ const ChatWrapper = ({ fileId }: ChatWrapperProps) => {
             </p>
 
             <Link
-              href="./dashboard"
+              href="/dashboard"
               className={buttonVariants({
                 variant: "secondary",
                 className: "mt-4",
