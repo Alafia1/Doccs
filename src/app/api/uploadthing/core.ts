@@ -3,9 +3,10 @@ import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { createUploadthing, type FileRouter } from "uploadthing/next";
 
 import { PDFLoader } from "langchain/document_loaders/fs/pdf";
-import { OpenAIEmbeddings } from "@langchain/openai";
-import { PineconeStore } from "@langchain/pinecone";
-import { pinecone } from "@/lib/pinecone";
+import { OpenAIEmbeddings } from "langchain/embeddings/openai";
+import { PineconeStore } from "langchain/vectorstores/pinecone";
+import { getPineconeClient } from "@/lib/pinecone";
+import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 
 const f = createUploadthing();
 
@@ -40,18 +41,30 @@ export const ourFileRouter = {
         const pageLevelDocs = await loader.load();
         const pagesAmt = pageLevelDocs.length;
 
-        //vectorize and index entire document
+        const textSplitter = new RecursiveCharacterTextSplitter({
+          chunkSize: 1000,
+          chunkOverlap: 200,
+        });
 
+        const chunkedDocs = await textSplitter.splitDocuments(pageLevelDocs);
+
+        //vectorize and index entire document
+        const pinecone = await getPineconeClient();
         const pineconeIndex = pinecone.Index("doccs");
 
-        const embeddings = new OpenAIEmbeddings({
-          openAIApiKey: process.env.OPENAI_API_KEY,
-        });
+        // const embeddings = new OpenAIEmbeddings({
+        //   openAIApiKey: process.env.OPENAI_API_KEY,
+        // });
 
-        await PineconeStore.fromDocuments(pageLevelDocs, embeddings, {
-          pineconeIndex,
-          namespace: createdFile.id,
-        });
+        await PineconeStore.fromDocuments(
+          pageLevelDocs,
+          new OpenAIEmbeddings(),
+          {
+            pineconeIndex,
+            namespace: createdFile.id,
+            textKey: "text",
+          }
+        );
 
         await db.file.update({
           data: { uploadStatus: "SUCCESS" },
