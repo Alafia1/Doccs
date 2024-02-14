@@ -12,7 +12,7 @@ import { Icons } from "./Icons";
 import { DropdownMenuContent } from "@radix-ui/react-dropdown-menu";
 import Link from "next/link";
 import { Gem } from "lucide-react";
-import { LogoutLink } from "@kinde-oss/kinde-auth-nextjs/dist/types/components";
+import { LogoutLink } from "@kinde-oss/kinde-auth-nextjs/server";
 
 interface UserAccountNavProps {
   email: string | undefined;
